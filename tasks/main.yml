@@ -1,0 +1,78 @@
+---
+- block:
+
+    - name: Install python / pip / ansible dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - build-essential
+        - libffi-dev
+        - libssl-dev
+        - libxml2-dev
+        - libxslt1-dev
+        - python-dev
+        - python-pip
+        - zlib1g-dev
+      become: yes
+      tags: ["ansible","apt"]
+
+    - name: Remove python-cffi as it breaks cryptography
+      apt:
+        name: "{{ item }}"
+        state: absent
+        purge: yes
+      with_items:
+        - python-cffi
+      become: yes
+      tags: ["ansible","apt"]
+
+    - name: Install ansible with pip
+      pip:
+        name: ansible
+        version: "{{ ansible_version }}"
+      become: yes
+      tags: ["ansible","pip"]
+
+  when: ansible_pip|bool == True
+
+- block:
+
+    - block:
+
+        - name: Install ansible with apt
+          apt:
+            name: "ansible={{ ansible_version }}"
+            state: present
+          become: yes
+          tags: ["ansible","apt"]
+
+      when: ansible_os_family == "Debian"
+
+    - block:
+
+        - name: Install EPEL with yum
+          yum:
+            name: "epel-release"
+            state: present
+          become: yes
+          register: install_epel
+          tags: ["ansible","yum"]
+
+        - name: Update yum cache
+          yum:
+            update_cache: yes
+          become: yes
+          when: install_epel.changed == True
+          tags: ["ansible","yum"]
+
+        - name: Install ansible with yum
+          yum:
+            name: "ansible-{{ ansible_version }}"
+            state: present
+          become: yes
+          tags: ["ansible","yum"]
+
+      when: ansible_os_family == "RedHat"
+
+  when: ansible_pip|bool == False
