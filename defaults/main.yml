@@ -1,3 +1,4 @@
 ---
-ansible_version: 2.2.0
-ansible_pip: yes
+__ansible_package_name: ansible
+__ansible_pip: yes
+#__ansible_version: 2.2.1

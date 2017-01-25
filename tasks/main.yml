@@ -35,19 +35,26 @@
 
     - name: Install ansible with pip
       pip:
-        name: "ansible=={{ ansible_version }}"
+        name: ansible
+        version: "{{ __ansible_version|default(omit) }}"
       become: yes
       tags: ["ansible","pip"]
 
-  when: ansible_pip|bool == True
+  when: __ansible_pip|bool == True
 
 - block:
 
     - block:
 
+        - name: Set ansible package name with version (for apt)
+          set_fact:
+            __ansible_package_name: "{{ __ansible_package_name }}={{ __ansible_version }}"
+          when: (__ansible_version is defined) and
+                (__ansible_version|string != "")
+
         - name: Install ansible with apt
           apt:
-            name: "ansible={{ ansible_version }}"
+            name: "{{ __ansible_package_name }}"
             state: present
           become: yes
           tags: ["ansible","apt"]
@@ -55,6 +62,12 @@
       when: ansible_os_family == "Debian"
 
     - block:
+
+        - name: Set ansible package name with version (for yum)
+          set_fact:
+            __ansible_package_name: "{{ __ansible_package_name }}-{{ __ansible_version }}"
+          when: (__ansible_version is defined) and
+                (__ansible_version|string != "")
 
         - name: Install EPEL with yum
           yum:
@@ -80,4 +93,4 @@
 
       when: ansible_os_family == "RedHat"
 
-  when: ansible_pip|bool == False
+  when: __ansible_pip|bool == False

@@ -18,6 +18,8 @@ Ansible role that installs ansible from pip or native package management
 
 See `./defaults/main.yml` for configurable variables and their defaults
 
+Note: Variables start with `__` to avoid conflict with inbuilt ansible facts
+
 ## Example playbook
 
     ---
@@ -33,8 +35,8 @@ See `./defaults/main.yml` for configurable variables and their defaults
       hosts: all
       roles:
         - { ansible,
-            ansible_version: 2.2.0,
-            ansible_pip: no
+            _____ansible_version: 2.2.0,
+            __ansible_pip: no
           }
 
 ## Add as a submodule to your playbook repo
