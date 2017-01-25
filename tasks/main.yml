@@ -12,25 +12,30 @@
         - libxml2-dev
         - libxslt1-dev
         - python-dev
-        - python-pip
         - zlib1g-dev
       become: yes
       tags: ["ansible","apt"]
 
-    - name: Remove python-cffi as it breaks cryptography
+    - name: Remove python-cffi and python-pip for compatibility
       apt:
         name: "{{ item }}"
         state: absent
         purge: yes
       with_items:
         - python-cffi
+        - python-pip
       become: yes
       tags: ["ansible","apt"]
 
+    - name: Install pip with easy_install
+      easy_install:
+        name: pip
+      become: yes
+      tags: ["ansible","pip"]
+
     - name: Install ansible with pip
       pip:
-        name: ansible
-        version: "{{ ansible_version }}"
+        name: "ansible=={{ ansible_version }}"
       become: yes
       tags: ["ansible","pip"]
 
